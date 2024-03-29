@@ -1,0 +1,155 @@
+package parcial1_2021_22;
+import acm.program.CommandLineProgram;
+import java.util.StringTokenizer;
+
+//apartat a
+public class CharPair {
+
+    private final char from;
+    private final char to;
+
+    public CharPair(char from, char to){
+        this.from = from;
+        this.to = to;
+    }
+
+    public int encode(char c){
+        if(from == c) return (int) to;
+        return -1;
+    }
+
+    public boolean conflictsWith(CharPair other){
+        return this.from == other.from || this.to == other.to;
+    }
+
+    public CharPair invert(){
+        return new CharPair(to, from);
+    }
+
+    @Override // esto solo es pa que se vea bonito 
+    public String toString() {
+        return  "|" + from + " ------- "+
+                 to + "|" +
+                '\n';
+    }
+}
+
+//appartat b
+public class Cypher {
+    private CharPair[] set;
+    private int it;
+
+    public Cypher(int initialSize){
+        set = new CharPair[initialSize];
+        it = 0;
+    }
+
+    public boolean addPair(char from, char to){
+        CharPair cp = new CharPair(from,to);
+
+        for (int i = 0; i < it; i++) {
+            if(set[i].conflictsWith(cp)) return false;
+        }
+
+        resize();
+        set[it] = cp;
+        it++;
+
+        return true;
+    }
+
+    public Cypher invert(){
+        if(it == 0) return null;
+        Cypher cp = new Cypher(it);
+
+        for (int i = 0; i < it; i++) {
+            cp.set[i] = this.set[i].invert();
+        }
+        return cp;
+    }
+
+    public String encode(String input){
+        StringBuilder encMsg = new StringBuilder();
+
+        for (int i = 0; i < input.length(); i++) {
+            int c = checkChar(input.charAt(i)) ;
+            if (!(c < 0)) encMsg.append((char) c);
+            else return null;
+        }
+
+        return encMsg.toString();
+    }
+
+    private int checkChar(char c) {
+        for (int i = 0; i < it; i++) {
+            int cl = set[i].encode(c);
+
+            if(!(cl < 0)) return cl;
+        }
+        return -1;
+    }
+
+
+    private void resize() {
+        if(set.length <= it){
+            CharPair[] aux = set;
+            set = new CharPair[it*2];
+
+            for (int i = 0; i < it; i++) set[i] = aux[i];
+        }
+    }
+
+    @Override
+    public String toString() {
+        String s ="-------------\n";
+        s = s.concat("|from --- to|\n");
+        s = s.concat("|-----------|\n");
+
+        for (int i = 0; i < it; i++) {
+            s = s.concat(set[i].toString());
+        }
+        s = s.concat("-------------");
+        s = s.concat("\nit = "+it+"\n");
+        return s;
+    }
+}
+
+public class CypherProgram extends CommandLineProgram {
+
+    private static final int INITIAL_SIZE = 28;
+    private Cypher cypher;
+    private int numErrors;
+    private void initializeResults() {
+        this.cypher = new Cypher(INITIAL_SIZE);
+        this.numErrors = 0;
+    }
+    public void run() {
+        this.initializeResults();
+//        String claves = readLine("Dame las claves: ");
+//        String frase = readLine("Dime una frase: ");
+        String claves = "a>b b>z b>u i>z p>o r>t t>z t>c v>f";
+        String frase = "patata brava";
+
+        StringTokenizer st = new StringTokenizer(claves, " ");
+
+        cypher.addPair(' ', ' ');
+        while(st.hasMoreTokens()){
+            String clave = st.nextToken();
+            if(!cypher.addPair(clave.charAt(0), clave.charAt(2))) numErrors++;
+        }
+
+        String cod = this.cypher.encode(frase);
+
+        println(cypher.toString());
+        if(cod != null){
+            println("Errores: "+numErrors);
+            println("Cifrado: "+cod);
+        }else println("No se ha podido codificar.");
+    }
+
+    public static void main(String[] args) {
+        new CypherProgram().start(args);
+    }
+
+
+}

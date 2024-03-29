@@ -1,0 +1,159 @@
+public class Duration {
+    private int hours;
+    private int minutes;
+    private int seconds;
+
+    public Duration (int hours, int minutes, int seconds) {
+        //no - , duracion corresp valores
+
+        this.hours = hours;
+        this.minutes = minutes;
+        this.seconds = seconds;
+        this.normalizeTime();
+    }
+    private void normalizeTime() {
+        if (this.seconds >= 60) {
+            this.minutes += this.seconds / 60;
+            this.seconds %= 60;//this.seconds this.seconds%60;
+
+        }
+        if (this.minutes >= 60 ) {
+            this.hours += this.minutes/60;
+            this.minutes %= 60;
+        }
+    }
+
+    int getHours() {
+        //devuleve num horas en la duracion
+    return hours;
+    }
+
+    int getMinutes() {
+    return minutes;
+    }
+
+    int getSeconds(){
+      return seconds;
+
+    }
+
+    int inSeconds() {
+        //DURACION TOTAL EN SEGUNDOS
+        return (hours*3600 + minutes*60 + seconds);
+    }
+
+    void add(Duration other) {
+        if ( !(other == null) {
+            this.hours += other.getHours();
+            this.minutes += other.getMinutes();
+            this.seconds += other.getSeconds();
+
+        }
+
+    }
+
+    static Duration add(Duration d1, Duration d2) {
+        if ( !(d1 == null || d2 == null)) { // que no sean null
+            //Calculo
+            int totalSeconds = d1.inSeconds() + d2.inSeconds();
+            int hours = totalSeconds / 3600;
+            int rHours = totalSeconds % 3600;
+            int minutes = rHours / 60;
+            int seconds = rHours % 60;
+
+            return new Duration(hours, minutes, seconds);
+
+
+        }
+        return null;
+
+    }
+}
+
+
+public class DurationAcumulator {
+    //COLECCION APLIABE DE DURACIONES PARA ACUMULAR LOS TIEMPOS ASOCIADOS A UN DET. IDENTIFICADOR
+
+    private int initialSize;
+    private int marginSize;
+    private Duration[] durations;
+    private int n;
+
+    private int id;
+    public int getId() {
+        return id;
+    }
+    public DurationAcumulator (int initialSize, int marginSize) {
+    this.durations =  new Duration[ initialSize + marginSize];
+
+    }
+    boolean storeDuration (int id, Duration duration) {
+        if (id < 0 || duration == null) {
+            return false;
+        }
+
+        if(existed(id)) {
+            durations[id] = durations[id].add(duration);
+            return true;
+
+        } else {
+            durations[id] = duration;
+            n++;
+
+
+            if (durations.length == n) {
+                resize();
+
+            }
+            return true;
+        }
+    }
+
+    public boolean existed(int id) {
+        for (int i = 0; i < n; i++) {
+            if (durations[i] == id) {
+                return true;
+            }
+
+        }
+        return false;
+    }
+
+    public void resize () {
+        Duration[] aux = durations;
+        durations = new Duration[durations.length+ marginSize];
+        for (int i = 0; i < durations.length; i++) {
+            durations[i] = aux[i];
+        }
+    }
+
+    public Duration durationAt(int id) {
+        if (!(existed(id))) return null;
+        return durations[id];
+    }
+
+    public int getMinimum() {
+        Duration durationMax = this.durations[0];
+        for (int i = 0; i < n; i++) {
+            if (durationMax.getId() > this.durations[i].getId()) {
+                durationMax = this.durations[i];
+            }
+
+        }
+        return durationMax.getId();
+    }
+
+}
+
+/*
+public class Problema2 {
+    private static final int INITIAL_SIZE = 5;
+    private static final int MARGIN_SIZE = 3;
+
+    public void run() {
+
+
+    }
+
+}
+*/
